@@ -3,19 +3,29 @@ class TasksController < ApplicationController
 
   # GET /tasks or /tasks.json
   def index
-    # @tasks = Task.all
-    ids = [1, 2]
-    sql = sanitize_sql_array(['SELECT * from tasks WHERE id IN (:ids)', ids: ids])
-    @tasks = Task.where(sql)
+    @tasks = Task.all
   end
 
   def search
     @tasks = Task.search(search_params[:search])
+
+    # keyword = search_params[:search]
+    # @tasks = Task.where("tasks.category LIKE ? or tasks.content LIKE ?", "%#{keyword}%", "%#{keyword}%")
+
+    # サニタイズされていた場合
+    sql = Task.sanitize_sql_array(["tasks.category LIKE ?", "%#{keyword}%"])
+    @tasks = Task.where(sql)
+
+    # サニタイズされてない場合
+    # 「生活' OR content = 'タスク-1」が検索された場合、意図しない結果になる
+    # @tasks = Task.where("category = '#{keyword}'")
+
     render :index
   end
 
   # GET /tasks/1 or /tasks/1.json
   def show
+    @task = Task.find(params[:id])
   end
 
   # GET /tasks/new
